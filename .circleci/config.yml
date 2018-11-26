@@ -1,0 +1,43 @@
+version: 2
+jobs:
+  build:
+    machine: 
+      docker_layer_caching: true
+    steps: 
+      - checkout
+
+  # publish jobs require $DOCKERHUB_USER, $DOCKERHUB_PASS defined
+  publish_linuxarm32v7:
+    machine:
+      docker_layer_caching: true
+    steps:
+      - checkout  
+      - run:
+          command: |
+            LATEST_TAG="${CIRCLE_TAG:1}"
+            DOCKERHUB_REPO="btcpayserver/docker-compose-builder"
+            DOCKERHUB_DESTINATION="$DOCKERHUB_REPO:$LATEST_TAG-arm32v7"
+            DOCKERHUB_DOCKEFILE="linuxarm32v7.Dockerfile"
+            #
+            # Make sure the builder is copy the arm emulator
+            sudo docker run --rm --privileged multiarch/qemu-user-static:register --reset
+            sudo apt update
+            sudo apt install -y qemu qemu-user-static qemu-user binfmt-support
+            sudo cp /usr/bin/qemu-arm-static "$(dirname "$DOCKERHUB_DOCKEFILE")/qemu-arm-static"
+            sed -i -e 's/#EnableQEMU //g' "$DOCKERHUB_DOCKEFILE"
+            #
+            echo "Pushing $DOCKERHUB_DOCKEFILE to dockerhub repository $DOCKERHUB_DESTINATION"
+            sudo docker login --username=$DOCKERHUB_USER --password=$DOCKERHUB_PASS
+            sudo docker build --pull --build-arg "DOCKER_COMPOSE_VER=$LATEST_TAG" -t $DOCKERHUB_DESTINATION -f "$DOCKERHUB_DOCKEFILE" .
+            sudo docker push $DOCKERHUB_DESTINATION
+
+workflows:
+  version: 2
+  publish:
+    jobs:
+      - publish_linuxarm32v7:
+          filters:
+            branches:
+              ignore: /.*/
+            tags:
+              only: /v[0-9]+(\.[0-9]+)*/
