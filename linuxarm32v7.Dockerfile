@@ -1,11 +1,11 @@
 # Dockerfile to build docker-compose for aarch64
 FROM arm32v7/python:3.6.5-stretch as builder
-
 # Add env
 ENV LANG C.UTF-8
 
 # Enable cross-build for aarch64
 #EnableQEMU COPY qemu-arm-static /usr/bin
+RUN apt-get update && apt-get install -qq --no-install-recommends unzip
 
 # Set the versions
 ARG DOCKER_COMPOSE_VER
@@ -28,13 +28,16 @@ RUN curl -fsSL https://github.com/pyinstaller/pyinstaller/releases/download/v$PY
 
 # Clone docker-compose
 WORKDIR /build/dockercompose
-RUN curl -fsSL https://github.com/docker/compose/archive/$DOCKER_COMPOSE_VER.zip | tar xvz
+RUN curl -fsSL https://github.com/docker/compose/archive/$DOCKER_COMPOSE_VER.zip > $DOCKER_COMPOSE_VER.zip \
+    && unzip $DOCKER_COMPOSE_VER.zip
 
 # Run the build steps (taken from github.com/docker/compose/script/build/linux-entrypoint)
-RUN mkdir ./dist \
-    && pip install -q -r requirements.txt -r requirements-build.txt \
-    && ./script/build/write-git-sha \
+RUN cd compose-$DOCKER_COMPOSE_VER && mkdir ./dist \
+    && pip install -q -r requirements.txt -r requirements-build.txt
+
+RUN cd compose-$DOCKER_COMPOSE_VER \
     && pyinstaller docker-compose.spec \
+    && echo "unknown" > compose/GITSHA \
     && mv dist/docker-compose ./docker-compose-$(uname -s)-$(uname -m)
 
 FROM arm32v7/debian:stretch-slim
