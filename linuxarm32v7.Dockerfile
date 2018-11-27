@@ -47,4 +47,4 @@ COPY --from=builder /dist/docker-compose /tmp/docker-compose
 
 # Copy out the generated binary
 VOLUME /dist
-CMD cp /tmp/docker-compose /dist/docker-compose
+CMD /bin/cp /tmp/docker-compose /dist/docker-compose
