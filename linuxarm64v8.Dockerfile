@@ -17,7 +17,7 @@ ENV SIX_VER 1.11.0
 
 # Install dependencies
 # RUN apt-get update && apt-get install -y
-RUN pip install --upgrade pip &&
+RUN pip install --upgrade pip
 RUN pip install six==$SIX_VER
 
 # Compile the pyinstaller "bootloader"
