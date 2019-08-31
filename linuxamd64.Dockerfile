@@ -14,6 +14,7 @@ ENV PYINSTALLER_VER 3.3.1
 ENV SIX_VER 1.11.0
 
 # Install dependencies
+RUN pip install --upgrade pip
 RUN pip install six==$SIX_VER
 
 # Compile the pyinstaller "bootloader"
@@ -30,7 +31,7 @@ RUN curl -fsSL https://github.com/docker/compose/archive/$DOCKER_COMPOSE_VER.zip
 
 # Run the build steps (taken from https://github.com/docker/compose/blob/master/script/build/linux-entrypoint)
 RUN cd compose-$DOCKER_COMPOSE_VER && mkdir ./dist \
-    && pip install --upgrade pip && pip install -q -r requirements.txt -r requirements-build.txt
+    && pip install -q -r requirements.txt -r requirements-build.txt
 
 RUN cd compose-$DOCKER_COMPOSE_VER \
     && echo "unknown" > compose/GITSHA \
