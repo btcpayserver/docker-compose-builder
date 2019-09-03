@@ -37,7 +37,7 @@ COPY PyNaCl-remove-check.patch PyNaCl-remove-check.patch
 RUN cd compose-$DOCKER_COMPOSE_VER && pip download --dest "/tmp/packages" -r requirements.txt -r requirements-build.txt wheel && cd .. && \
     wget -qO pynacl.tar.gz https://github.com/pyca/pynacl/archive/1.3.0.tar.gz && \
     echo "205adb2804eed4bc3780584e368ef2e9b8b22a7aae85323068cadd59f3c8a584  pynacl.tar.gz" | sha256sum -c - && \
-    mkdir pynacl && tar --strip-components=1 -xvf pynacl.tar.gz -C pynacl && rm pynacl.tar.gz \
+    mkdir pynacl && tar --strip-components=1 -xvf pynacl.tar.gz -C pynacl && rm pynacl.tar.gz && \
     cd pynacl && \
     git apply ../PyNaCl-remove-check.patch && \
     python3 setup.py sdist && \
