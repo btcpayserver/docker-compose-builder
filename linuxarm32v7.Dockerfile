@@ -32,9 +32,16 @@ WORKDIR /build/dockercompose
 RUN curl -fsSL https://github.com/docker/compose/archive/$DOCKER_COMPOSE_VER.zip > $DOCKER_COMPOSE_VER.zip \
     && unzip $DOCKER_COMPOSE_VER.zip
 
-# Run the build steps (taken from https://github.com/docker/compose/blob/master/script/build/linux-entrypoint)
-RUN cd compose-$DOCKER_COMPOSE_VER && mkdir ./dist \
-    && pip install -r requirements.txt -r requirements-build.txt
+# We need to patch pynacl because of https://github.com/pyca/pynacl/issues/553
+COPY PyNaCl-remove-check.patch PyNaCl-remove-check.patch
+RUN cd compose-$DOCKER_COMPOSE_VER && pip download --dest "/tmp/packages" -r requirements.txt -r requirements-build.txt wheel && cd .. \
+    git clone https://github.com/pyca/pynacl && cd pynacl && \
+    git checkout 1.3.0 && \
+    git apply ../PyNaCl-remove-check.patch && \
+    python3 setup.py sdist && \
+    cp -f dist/PyNaCl-1.3.0.tar.gz /tmp/packages/ && \
+    cd ../compose-$DOCKER_COMPOSE_VER && rm -rf ../pynacl && \
+    pip install --no-index --find-links /tmp/packages -r requirements.txt -r requirements-build.txt && rm -rf /tmp/packages
 
 RUN cd compose-$DOCKER_COMPOSE_VER \
     && echo "unknown" > compose/GITSHA \
