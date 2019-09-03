@@ -34,7 +34,7 @@ RUN curl -fsSL https://github.com/docker/compose/archive/$DOCKER_COMPOSE_VER.zip
 
 # We need to patch pynacl because of https://github.com/pyca/pynacl/issues/553
 COPY PyNaCl-remove-check.patch PyNaCl-remove-check.patch
-RUN cd compose-$DOCKER_COMPOSE_VER && pip download --dest "/tmp/packages" -r requirements.txt -r requirements-build.txt wheel && cd .. \
+RUN cd compose-$DOCKER_COMPOSE_VER && pip download --dest "/tmp/packages" -r requirements.txt -r requirements-build.txt wheel && cd .. && \
     git clone https://github.com/pyca/pynacl && cd pynacl && \
     git checkout 1.3.0 && \
     git apply ../PyNaCl-remove-check.patch && \
