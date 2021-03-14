@@ -1,0 +1,1 @@
+MOVED TO https://github.com/btcpayserver/dockerfile-deps/tree/master/docker-compose
